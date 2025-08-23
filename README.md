@@ -12,6 +12,42 @@ This is a lightweight JavaScript solution to manage multi-language **Gutenberg t
 
 ---
 
+## Enqueue to prepare your theme to use this
+
+```php
+//Polylang custom switcher for JS
+add_action('wp', function() {
+
+    // Bail if Polylang is not active
+    if (!function_exists('pll_the_languages')) {
+        error_log('Polylang not detected at wp!');
+        return;
+    }
+
+    // Enqueue our JS
+    wp_enqueue_script(
+        'lang',
+        get_template_directory_uri() . '/assets/scripts/lang.js', //change to your desired script location
+        [],
+        null,
+        true
+    );
+
+    // Expose Polylang languages to JS
+    $languages = pll_the_languages(['raw' => 1]);
+    if ($languages) {
+        wp_localize_script(
+            'lang',
+            'PolylangLanguages',
+            $languages
+        );
+        error_log('Polylang detected, lang.js enqueued with languages.');
+    } else {
+        error_log('Polylang detected, but no languages found.');
+    }
+});
+```
+
 ## Required Gutenberg Structure
 
 For this to work correctly, add the required classes to the parent of your content's container.
