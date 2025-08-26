@@ -12,7 +12,7 @@ This is a lightweight JavaScript solution to manage multi-language **Gutenberg t
 
 ---
 
-## Enqueue to prepare your theme to use this
+## Enqueue to prepare your theme to use this (please note that we need to expose the languages to the JS so for custom terms we will need to change/expand the category fix
 
 ```php
 //Polylang custom switcher for JS
@@ -27,7 +27,7 @@ add_action('wp', function() {
     // Enqueue our JS
     wp_enqueue_script(
         'lang',
-        get_template_directory_uri() . '/assets/scripts/lang.js', //change to your desired script location
+        get_template_directory_uri() . '/assets/scripts/lang.js',
         [],
         null,
         true
@@ -36,6 +36,23 @@ add_action('wp', function() {
     // Expose Polylang languages to JS
     $languages = pll_the_languages(['raw' => 1]);
     if ($languages) {
+		// category fix
+    if (is_category()) {
+        $term = get_queried_object();
+        if ($term && isset($term->term_id)) {
+            foreach ($languages as $lang => &$data) {
+                $translated_id = pll_get_term($term->term_id, $lang);
+                if ($translated_id) {
+                    $translated_term = get_term($translated_id);
+                    if ($translated_term) {
+                        $data['current_term_slug'] = $translated_term->slug;
+                        $data['current_term_link'] = get_term_link($translated_term);
+                    }
+                }
+            }
+        }
+		}
+
         wp_localize_script(
             'lang',
             'PolylangLanguages',
